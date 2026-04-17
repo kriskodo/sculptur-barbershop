@@ -121,12 +121,12 @@
   .hero-copy { position: relative; }
   h1.hero-title .line-last {
     display: flex !important; align-items: center;
-    justify-content: flex-start; gap: 28px;
+    justify-content: flex-start; gap: 18px;
     flex-wrap: wrap;
     overflow: visible !important;
   }
   .hero-razor {
-    width: clamp(110px, 15vw, 180px); height: auto;
+    width: clamp(80px, 8vw, 108px); height: auto;
     flex-shrink: 0;
     transform: rotate(-6deg);
     transform-origin: center;
@@ -161,10 +161,10 @@
   }
   .btn {
     display: inline-flex; align-items: center; justify-content: center;
-    gap: 18px;
-    padding: 20px 40px; min-height: 58px;
+    gap: 14px;
+    padding: 15px 28px; min-height: 50px;
     background: var(--ink); color: #fff; text-decoration: none;
-    font-weight: 800; font-size: 13px;
+    font-weight: 800; font-size: 12px;
     text-transform: uppercase; letter-spacing: 0.14em;
     border: var(--border-thick); box-shadow: var(--shadow-sm);
     transition: transform .12s ease, box-shadow .12s ease;
@@ -245,18 +245,25 @@
   .mm-cta { margin-top: 18px; width: 100%; }
 
   /* ---------- HERO ---------- */
-  .hero { padding: 72px 0 110px; position: relative; }
+  .hero { padding: 32px 0 40px; position: relative; }
+  @media (min-width: 961px) {
+    .hero {
+      min-height: calc(100vh - 74px);
+      display: flex; align-items: center;
+      padding: 24px 0;
+    }
+  }
   .hero-grid {
-    display: grid; grid-template-columns: 1.3fr 1fr;
-    gap: 60px; align-items: center;
+    display: grid; grid-template-columns: 1.25fr 1fr;
+    gap: 40px; align-items: center; width: 100%;
   }
   .eyebrow {
     display: inline-flex; align-items: center; gap: 10px;
     background: var(--mustard); border: var(--border);
-    padding: 7px 14px; font-family: 'JetBrains Mono', monospace;
+    padding: 6px 12px; font-family: 'JetBrains Mono', monospace;
     font-size: 11px; font-weight: 600;
     text-transform: uppercase; letter-spacing: 0.08em;
-    box-shadow: var(--shadow-sm); margin-bottom: 24px;
+    box-shadow: var(--shadow-sm); margin-bottom: 18px;
   }
   .eyebrow::before {
     content: ''; width: 8px; height: 8px;
@@ -267,9 +274,9 @@
 
   h1.hero-title {
     font-family: 'Archivo Black', sans-serif;
-    font-size: clamp(44px, 9vw, 148px);
+    font-size: clamp(44px, 5.4vw, 84px);
     line-height: 0.9; letter-spacing: -0.02em;
-    text-transform: uppercase; margin-bottom: 24px;
+    text-transform: uppercase; margin-bottom: 16px;
   }
   h1.hero-title .line { display: block; overflow: hidden; }
   h1.hero-title .accent { color: var(--rust); }
@@ -280,22 +287,23 @@
   }
 
   .hero-sub {
-    font-size: 16px; max-width: 480px;
-    margin-bottom: 28px; color: var(--ink-soft);
+    font-size: 14px; max-width: 440px;
+    margin-bottom: 20px; color: var(--ink-soft);
+    line-height: 1.5;
   }
   .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
 
   /* Hero stats — fills the space between CTAs and the hero image */
   .hero-stats {
     display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 14px; margin-top: 40px;
-    max-width: 560px;
+    gap: 10px; margin-top: 24px;
+    max-width: 480px;
   }
   .hero-stat {
     position: relative;
     border: var(--border); background: var(--bg);
     box-shadow: var(--shadow-sm);
-    padding: 16px 16px 14px;
+    padding: 12px 12px 11px;
     transition: transform .18s var(--ease-out-soft), box-shadow .18s var(--ease-out-soft);
   }
   .hero-stat:nth-child(1) { background: var(--bg); }
@@ -310,19 +318,19 @@
   }
   .hero-stat dd {
     font-family: 'Archivo Black', sans-serif;
-    font-size: 28px; line-height: 1;
+    font-size: 22px; line-height: 1;
     letter-spacing: -0.01em;
     color: var(--ink);
   }
   .hero-stat dd span { color: var(--rust); margin-left: 2px; }
   .hero-stat-tag {
-    display: block; margin-top: 10px;
+    display: block; margin-top: 8px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px; font-weight: 700;
     text-transform: uppercase; letter-spacing: 0.08em;
     color: var(--ink);
     border-top: 1.5px solid var(--ink);
-    padding-top: 8px;
+    padding-top: 6px;
   }
 
   .hero-image-wrap { position: relative; }
@@ -333,6 +341,16 @@
     background: var(--charcoal);
     position: relative; overflow: hidden;
     will-change: transform;
+  }
+  @media (min-width: 961px) {
+    .hero-image-wrap {
+      max-width: 440px; margin-left: auto;
+    }
+    .hero-image {
+      aspect-ratio: auto;
+      height: calc(100vh - 180px);
+      max-height: 620px;
+    }
   }
   .hero-image img {
     width: 100%; height: 100%;
@@ -410,15 +428,15 @@
     to { transform: translateX(-50%); }
   }
 
-  section { padding: 90px 0; position: relative; }
+  section { padding: 68px 0; position: relative; }
   .section-head {
     display: flex; align-items: flex-end;
     justify-content: space-between; gap: 24px;
-    margin-bottom: 48px; flex-wrap: wrap;
+    margin-bottom: 36px; flex-wrap: wrap;
   }
   .section-title {
     font-family: 'Archivo Black', sans-serif;
-    font-size: clamp(36px, 6vw, 76px);
+    font-size: clamp(36px, 4.6vw, 58px);
     line-height: 0.95; text-transform: uppercase;
     letter-spacing: -0.02em;
   }
@@ -434,7 +452,7 @@
     color: #fff; padding: 5px 11px;
     display: inline-block; margin-bottom: 12px;
   }
-  .section-desc { max-width: 360px; font-size: 15px; color: var(--ink-soft); }
+  .section-desc { max-width: 340px; font-size: 14px; color: var(--ink-soft); }
 
   /* ---------- SERVICES ---------- */
   .services-grid {
@@ -608,9 +626,9 @@
   }
   .booking h2 {
     font-family: 'Archivo Black', sans-serif;
-    font-size: clamp(40px, 7vw, 96px);
+    font-size: clamp(40px, 5.6vw, 76px);
     line-height: 0.92; text-transform: uppercase;
-    letter-spacing: -0.02em; margin-bottom: 22px;
+    letter-spacing: -0.02em; margin-bottom: 20px;
   }
   .booking h2 .stroke {
     color: transparent; -webkit-text-stroke: 2px var(--mustard);
@@ -621,7 +639,7 @@
     font-style: italic; font-weight: 400;
     text-transform: none; color: var(--camel);
   }
-  .booking p { font-size: 16px; max-width: 460px; color: #cfcfcf; margin-bottom: 28px; }
+  .booking p { font-size: 15px; max-width: 440px; color: #cfcfcf; margin-bottom: 24px; }
   .booking-btns { display: flex; gap: 14px; flex-wrap: wrap; }
 
   .booking-card {
@@ -659,10 +677,10 @@
   .slot-status.full { background: #e5e5e5; color: var(--ink-soft); }
 
   /* ---------- CONTACT / VISIT ---------- */
-  .contact { padding: 90px 0 50px; }
+  .contact { padding: 68px 0 40px; }
   .contact h3 {
     font-family: 'Archivo Black', sans-serif;
-    font-size: clamp(40px, 6vw, 72px);
+    font-size: clamp(40px, 4.6vw, 58px);
     text-transform: uppercase; line-height: 0.95; letter-spacing: -0.02em;
   }
   .contact h3 .italic {
