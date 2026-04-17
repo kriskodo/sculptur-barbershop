@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0a0a" />
+<meta name="description" content="SCULPTUR — a modern men's barbershop where precision meets personality. Sharp cuts, bold style, no bs." />
+<title>SCULPTUR — Barbershop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<link rel="preload" as="image" href="images/hero.webp" type="image/webp" fetchpriority="high" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f4efe6;
+    --ink: #0a0a0a;
+    --ink-soft: #2a2a2a;
+    --rust: #b8451f;
+    --rust-deep: #8a3315;
+    --olive: #4a5d1f;
+    --navy: #1a3a5c;
+    --mustard: #c89b2e;
+    --camel: #c8a97a;
+    --charcoal: #2e2e2e;
+    --shadow: 6px 6px 0 0 var(--ink);
+    --shadow-lg: 10px 10px 0 0 var(--ink);
+    --shadow-sm: 4px 4px 0 0 var(--ink);
+    --border: 3px solid var(--ink);
+    --border-thick: 4px solid var(--ink);
+    --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  ::selection { background: var(--mustard); color: var(--ink); }
+  ::-moz-selection { background: var(--mustard); color: var(--ink); }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(10,10,10,0.07) 1px, transparent 0);
+    background-size: 22px 22px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Subtle film grain — sits above the page, below interactive content */
+  body::after {
+    content: ''; position: fixed; inset: -50%;
+    pointer-events: none; z-index: 1;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+    mix-blend-mode: multiply;
+  }
+  nav, main, footer { position: relative; z-index: 2; }
+
+  img { max-width: 100%; display: block; }
+
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- A11Y UTILITIES ---------- */
+  .sr-only {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+  .skip-link {
+    position: absolute; top: -100px; left: 12px; z-index: 999;
+    background: var(--ink); color: #fff;
+    padding: 12px 18px; text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    border: var(--border-thick); box-shadow: var(--shadow-sm);
+  }
+  .skip-link:focus { top: 12px; outline: none; }
+
+  :focus { outline: none; }
+  :focus-visible {
+    outline: 3px solid var(--mustard);
+    outline-offset: 3px;
+  }
+  .btn:focus-visible,
+  .social-btn:focus-visible,
+  .nav-links a:focus-visible {
+    outline: 3px solid var(--mustard);
+    outline-offset: 4px;
+  }
+
+  /* ---------- NAV ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg); border-bottom: var(--border-thick);
+  }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px; max-width: 1280px; margin: 0 auto; gap: 12px;
+  }
+  .logo {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 20px; letter-spacing: 0.16em;
+    display: flex; align-items: center; gap: 12px;
+    white-space: nowrap;
+    color: var(--ink); text-decoration: none;
+  }
+  .logo::before {
+    content: ''; width: 12px; height: 12px;
+    background: var(--rust); border: 2px solid var(--ink);
+    display: inline-block; transform: rotate(45deg);
+    flex-shrink: 0;
+  }
+  .hero-copy { position: relative; }
+  h1.hero-title .line-last {
+    display: flex !important; align-items: center;
+    justify-content: flex-start; gap: 28px;
+    flex-wrap: wrap;
+    overflow: visible !important;
+  }
+  .hero-razor {
+    width: clamp(110px, 15vw, 180px); height: auto;
+    flex-shrink: 0;
+    transform: rotate(-6deg);
+    transform-origin: center;
+    filter: drop-shadow(5px 5px 0 rgba(10,10,10,0.22));
+    pointer-events: none;
+    margin-top: 4px;
+  }
+  .js .hero-razor { opacity: 0; }
+
+  /* Wrapper takes GSAP's intro transform (from .hero-razor base styles).
+     The spin illusion is carried entirely by the stripe <animateTransform> inside the SVG —
+     pole itself stays still. */
+  .pole-wrap { display: inline-block; }
+  .pole-wrap .hero-pole {
+    display: block;
+    width: 100%; height: auto;
+  }
+  @media (max-width: 640px) {
+    h1.hero-title .line-last { gap: 16px; }
+    .hero-razor { width: 92px; margin-top: 2px; }
+  }
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-links a {
+    text-decoration: none; color: var(--ink); font-weight: 600;
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em;
+    position: relative; padding: 4px 0;
+  }
+  .nav-links a:hover::after,
+  .nav-links a:focus-visible::after {
+    content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+    height: 6px; background: var(--mustard); z-index: -1;
+  }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 18px;
+    padding: 20px 40px; min-height: 58px;
+    background: var(--ink); color: #fff; text-decoration: none;
+    font-weight: 800; font-size: 13px;
+    text-transform: uppercase; letter-spacing: 0.14em;
+    border: var(--border-thick); box-shadow: var(--shadow-sm);
+    transition: transform .12s ease, box-shadow .12s ease;
+    cursor: pointer; white-space: nowrap;
+    font-family: inherit;
+  }
+  .btn { transition: transform .18s var(--ease-out-soft), box-shadow .18s var(--ease-out-soft), background-color .18s ease; }
+  .btn:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 0 var(--ink); }
+  .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 0 var(--ink); transition-duration: .08s; }
+  .btn-rust { background: var(--rust); color: #fff; }
+  .btn-mustard { background: var(--mustard); color: var(--ink); }
+  .btn-navy { background: var(--navy); color: #fff; }
+  .btn-cream { background: var(--bg-soft); color: var(--ink); }
+
+  .nav .btn { padding: 14px 26px; font-size: 11px; letter-spacing: 0.12em; min-height: 46px; gap: 12px; }
+
+  /* ---------- NAV TOGGLE (mobile) ---------- */
+  .nav-toggle {
+    display: none;
+    align-items: center; gap: 10px;
+    background: var(--bg); color: var(--ink);
+    border: var(--border-thick); box-shadow: var(--shadow-sm);
+    padding: 10px 16px; min-height: 46px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .nav-toggle:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 0 var(--ink); }
+  .nav-toggle .burger {
+    display: inline-flex; flex-direction: column; justify-content: center;
+    gap: 4px; width: 18px; height: 14px;
+  }
+  .nav-toggle .burger span {
+    display: block; height: 2.5px; background: var(--ink);
+    transition: transform .25s var(--ease-out-soft), opacity .2s ease;
+    transform-origin: center;
+  }
+  .nav-toggle[aria-expanded="true"] .burger span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  .nav-toggle[aria-expanded="true"] .burger span:nth-child(2) { opacity: 0; }
+  .nav-toggle[aria-expanded="true"] .burger span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+  .mobile-menu {
+    display: flex; flex-direction: column;
+    gap: 4px; padding: 18px 24px 28px;
+    background: var(--bg); border-top: var(--border-thick);
+    border-bottom: var(--border-thick);
+    background-image: radial-gradient(circle at 1px 1px, rgba(10,10,10,0.07) 1px, transparent 0);
+    background-size: 22px 22px;
+    animation: mm-slide .2s var(--ease-out-soft);
+    position: absolute;
+    top: 100%; left: 0; right: 0;
+    z-index: 99;
+    box-shadow: 0 12px 24px -12px rgba(10,10,10,0.35);
+  }
+  .mobile-menu[hidden] { display: none; }
+  @keyframes mm-slide {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .mm-link {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 4px;
+    text-decoration: none; color: var(--ink);
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 22px; letter-spacing: 0.02em;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--ink);
+    position: relative;
+  }
+  .mm-link::after {
+    content: '→'; font-family: 'JetBrains Mono', monospace;
+    font-size: 18px; color: var(--rust);
+    transition: transform .2s ease;
+  }
+  .mm-link:hover::after, .mm-link:focus-visible::after { transform: translateX(4px); }
+  .mm-cta { margin-top: 18px; width: 100%; }
+
+  /* ---------- HERO ---------- */
+  .hero { padding: 72px 0 110px; position: relative; }
+  .hero-grid {
+    display: grid; grid-template-columns: 1.3fr 1fr;
+    gap: 60px; align-items: center;
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: var(--mustard); border: var(--border);
+    padding: 7px 14px; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    box-shadow: var(--shadow-sm); margin-bottom: 24px;
+  }
+  .eyebrow::before {
+    content: ''; width: 8px; height: 8px;
+    border-radius: 50%; background: var(--ink);
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+
+  h1.hero-title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(44px, 9vw, 148px);
+    line-height: 0.9; letter-spacing: -0.02em;
+    text-transform: uppercase; margin-bottom: 24px;
+  }
+  h1.hero-title .line { display: block; overflow: hidden; }
+  h1.hero-title .accent { color: var(--rust); }
+  h1.hero-title .italic {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic; font-weight: 400;
+    text-transform: none; letter-spacing: -0.01em; color: var(--navy);
+  }
+
+  .hero-sub {
+    font-size: 16px; max-width: 480px;
+    margin-bottom: 28px; color: var(--ink-soft);
+  }
+  .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+
+  /* Hero stats — fills the space between CTAs and the hero image */
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 14px; margin-top: 40px;
+    max-width: 560px;
+  }
+  .hero-stat {
+    position: relative;
+    border: var(--border); background: var(--bg);
+    box-shadow: var(--shadow-sm);
+    padding: 16px 16px 14px;
+    transition: transform .18s var(--ease-out-soft), box-shadow .18s var(--ease-out-soft);
+  }
+  .hero-stat:nth-child(1) { background: var(--bg); }
+  .hero-stat:nth-child(2) { background: var(--bg-soft); }
+  .hero-stat:nth-child(3) { background: var(--mustard); }
+  .hero-stat:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 0 var(--ink); }
+  .hero-stat dt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--ink-soft); margin-bottom: 6px;
+  }
+  .hero-stat dd {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 28px; line-height: 1;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .hero-stat dd span { color: var(--rust); margin-left: 2px; }
+  .hero-stat-tag {
+    display: block; margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--ink);
+    border-top: 1.5px solid var(--ink);
+    padding-top: 8px;
+  }
+
+  .hero-image-wrap { position: relative; }
+  .hero-image {
+    width: 100%; aspect-ratio: 4/5;
+    border: var(--border-thick);
+    box-shadow: var(--shadow-lg);
+    background: var(--charcoal);
+    position: relative; overflow: hidden;
+    will-change: transform;
+  }
+  .hero-image img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    display: block;
+    /* subtle vignette for editorial feel */
+    filter: saturate(1.04) contrast(1.04);
+  }
+  .hero-image::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(10,10,10,0) 40%, rgba(10,10,10,0.25) 100%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    position: absolute; top: -22px; right: -18px;
+    background: var(--mustard); border: var(--border-thick);
+    width: 110px; height: 110px;
+    border-radius: 50%; box-shadow: var(--shadow);
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.06em; line-height: 1.2;
+    transform: rotate(-12deg);
+    animation: wiggle 4s ease-in-out infinite;
+    z-index: 5; padding: 12px;
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-12deg); }
+    50% { transform: rotate(-6deg); }
+  }
+  .hero-sticker {
+    position: absolute; bottom: -26px; left: -22px;
+    background: var(--bg); border: var(--border-thick);
+    padding: 14px 18px; box-shadow: var(--shadow);
+    transform: rotate(-4deg); max-width: 220px; z-index: 5;
+  }
+  .hero-sticker .stars { color: var(--rust); font-size: 16px; margin-bottom: 4px; letter-spacing: 2px; }
+  .hero-sticker .quote { font-size: 12px; font-weight: 600; line-height: 1.35; }
+  .hero-sticker .author { font-size: 10px; font-family: 'JetBrains Mono', monospace; margin-top: 6px; color: var(--ink-soft); }
+
+
+  .shape { position: absolute; border: var(--border); z-index: -1; }
+  .shape-1 {
+    top: 10%; right: 40%; width: 36px; height: 36px;
+    background: var(--navy); transform: rotate(20deg);
+  }
+  .shape-2 {
+    bottom: 20%; left: 44%; width: 54px; height: 54px;
+    border-radius: 50%; background: var(--camel);
+  }
+
+  /* ---------- MARQUEE ---------- */
+  .marquee {
+    background: var(--ink); color: #fff;
+    border-top: var(--border-thick); border-bottom: var(--border-thick);
+    overflow: hidden; padding: 20px 0;
+    position: relative;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-track {
+    display: flex; gap: 40px; white-space: nowrap;
+    animation: slide 28s linear infinite;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 20px; letter-spacing: 0.06em;
+    text-transform: uppercase;
+    will-change: transform;
+  }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+  .marquee-track span { display: flex; align-items: center; gap: 40px; }
+  .marquee-track .dot { color: var(--rust); }
+  @keyframes slide {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  section { padding: 90px 0; position: relative; }
+  .section-head {
+    display: flex; align-items: flex-end;
+    justify-content: space-between; gap: 24px;
+    margin-bottom: 48px; flex-wrap: wrap;
+  }
+  .section-title {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(36px, 6vw, 76px);
+    line-height: 0.95; text-transform: uppercase;
+    letter-spacing: -0.02em;
+  }
+  .section-title .italic {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic; font-weight: 400;
+    text-transform: none; color: var(--rust);
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.1em; background: var(--ink);
+    color: #fff; padding: 5px 11px;
+    display: inline-block; margin-bottom: 12px;
+  }
+  .section-desc { max-width: 360px; font-size: 15px; color: var(--ink-soft); }
+
+  /* ---------- SERVICES ---------- */
+  .services-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+  }
+  .service {
+    border: var(--border-thick); padding: 26px 22px 28px;
+    box-shadow: var(--shadow); background: var(--bg);
+    position: relative;
+    transition: transform .22s var(--ease-out-soft), box-shadow .22s var(--ease-out-soft);
+  }
+  .service:hover { transform: translate(-5px, -5px) rotate(-0.4deg); box-shadow: 12px 12px 0 0 var(--ink); }
+  .service::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 100% 0%, rgba(255,255,255,0.12), transparent 60%);
+    pointer-events: none; opacity: 0;
+    transition: opacity .3s ease;
+  }
+  .service:hover::before { opacity: 1; }
+  .service:nth-child(1) { background: var(--rust); color: #fff; }
+  .service:nth-child(2) { background: var(--bg); }
+  .service:nth-child(3) { background: var(--navy); color: #fff; }
+  .service:nth-child(4) { background: var(--mustard); }
+  .service-icon {
+    width: 48px; height: 48px;
+    background: var(--bg); border: var(--border);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 18px; color: var(--ink);
+  }
+  .service h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 20px; text-transform: uppercase;
+    margin-bottom: 10px; letter-spacing: -0.01em;
+  }
+  .service p { font-size: 13px; margin-bottom: 18px; line-height: 1.45; }
+  .service-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 2px solid currentColor; padding-top: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600;
+  }
+  .service .price { font-family: 'Archivo Black', sans-serif; font-size: 18px; }
+
+  /* ---------- GALLERY ---------- */
+  .gallery {
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: 180px; gap: 14px;
+  }
+  .gal-item {
+    border: var(--border-thick); box-shadow: var(--shadow-sm);
+    overflow: hidden; background: var(--charcoal);
+    transition: transform .28s var(--ease-out-soft), box-shadow .28s var(--ease-out-soft);
+    position: relative; margin: 0;
+  }
+  .gal-item img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    filter: saturate(1.05) contrast(1.04);
+    transition: transform .6s var(--ease-out-soft), filter .4s ease;
+  }
+  .gal-item:hover { transform: translate(-4px, -4px); box-shadow: 9px 9px 0 0 var(--ink); }
+  .gal-item:hover img { transform: scale(1.06); filter: saturate(1.15) contrast(1.08); }
+  .gal-item figcaption {
+    position: absolute; bottom: 10px; left: 10px;
+    background: var(--bg); border: 2px solid var(--ink);
+    padding: 3px 9px; font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    color: var(--ink);
+  }
+  .gal-1 { grid-column: span 2; grid-row: span 2; }
+  .gal-2 { grid-column: span 2; }
+  .gal-3 { grid-column: span 2; }
+  .gal-4 { grid-column: span 2; grid-row: span 2; }
+  .gal-5 { grid-column: span 2; }
+  .gal-6 { grid-column: span 2; }
+
+  /* ---------- TEAM ---------- */
+  .team {
+    background: var(--bg-soft);
+    border-top: var(--border-thick); border-bottom: var(--border-thick);
+  }
+  .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .barber {
+    background: var(--bg); border: var(--border-thick);
+    box-shadow: var(--shadow); overflow: hidden; position: relative;
+    transition: transform .22s var(--ease-out-soft), box-shadow .22s var(--ease-out-soft);
+  }
+  .barber:hover { transform: translate(-4px, -4px); box-shadow: 10px 10px 0 0 var(--ink); }
+  .barber-img img { transition: transform .7s var(--ease-out-soft); }
+  .barber:hover .barber-img img { transform: scale(1.04); }
+  .barber-img {
+    width: 100%; aspect-ratio: 4/5;
+    background: var(--charcoal);
+    border-bottom: var(--border-thick);
+    overflow: hidden;
+  }
+  .barber-img img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+  }
+
+  .barber-info { padding: 18px 20px 22px; }
+  .barber-name {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 20px; text-transform: uppercase; margin-bottom: 3px;
+  }
+  .barber-role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--ink-soft); margin-bottom: 12px;
+  }
+  .barber-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 10px; font-family: 'JetBrains Mono', monospace;
+    font-weight: 600; text-transform: uppercase;
+    border: 2px solid var(--ink); padding: 3px 7px;
+  }
+  .barber:nth-child(1) .tag:first-child { background: var(--rust); color: #fff; }
+  .barber:nth-child(2) .tag:first-child { background: var(--mustard); }
+  .barber:nth-child(3) .tag:first-child { background: var(--navy); color: #fff; }
+
+  .barber-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: var(--bg); border: var(--border);
+    padding: 5px 9px; font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 600; transform: rotate(4deg);
+    z-index: 2;
+  }
+
+  /* ---------- TESTIMONIALS ---------- */
+  .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .testi {
+    border: var(--border-thick); padding: 24px 22px;
+    box-shadow: var(--shadow); position: relative; background: var(--bg);
+  }
+  .testi:nth-child(1) { background: var(--camel); transform: rotate(-1.5deg); }
+  .testi:nth-child(2) { background: var(--bg); transform: rotate(1deg); }
+  .testi:nth-child(3) { background: var(--bg-soft); transform: rotate(-0.5deg); }
+  .testi-stars { font-size: 18px; color: var(--rust); margin-bottom: 12px; letter-spacing: 4px; }
+  .testi-quote {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px; line-height: 1.35; margin-bottom: 20px;
+  }
+  .testi-author {
+    display: flex; align-items: center; gap: 12px;
+    border-top: 2px solid var(--ink); padding-top: 14px;
+  }
+  .testi-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 2px solid var(--ink); overflow: hidden;
+    background: var(--charcoal); flex-shrink: 0;
+  }
+  .testi-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .testi-name { font-weight: 800; font-size: 13px; }
+  .testi-handle { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink-soft); }
+
+  /* ---------- BOOKING CTA ---------- */
+  .booking {
+    background: var(--ink); color: #fff;
+    border-top: var(--border-thick); border-bottom: var(--border-thick);
+    position: relative; overflow: hidden;
+  }
+  .booking::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0);
+    background-size: 22px 22px; pointer-events: none;
+  }
+  .booking-inner {
+    display: grid; grid-template-columns: 1.2fr 1fr;
+    gap: 50px; align-items: center; position: relative;
+  }
+  .booking h2 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(40px, 7vw, 96px);
+    line-height: 0.92; text-transform: uppercase;
+    letter-spacing: -0.02em; margin-bottom: 22px;
+  }
+  .booking h2 .stroke {
+    color: transparent; -webkit-text-stroke: 2px var(--mustard);
+  }
+  .booking h2 .fill { color: var(--mustard); }
+  .booking h2 .italic {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic; font-weight: 400;
+    text-transform: none; color: var(--camel);
+  }
+  .booking p { font-size: 16px; max-width: 460px; color: #cfcfcf; margin-bottom: 28px; }
+  .booking-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+
+  .booking-card {
+    background: var(--bg); color: var(--ink);
+    border: var(--border-thick); padding: 28px;
+    box-shadow: 10px 10px 0 0 var(--rust);
+    transform: rotate(2deg);
+  }
+  .booking-card h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 18px;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px; flex-wrap: wrap;
+  }
+  .booking-card h4 .live {
+    background: var(--rust); color: #fff;
+    padding: 3px 8px; border: 2px solid var(--ink);
+    font-size: 10px;
+  }
+  .slot-list { list-style: none; }
+  .slot {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 2px dashed var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .slot:last-child { border-bottom: none; }
+  .slot-time { font-weight: 700; font-size: 14px; }
+  .slot-status {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    padding: 3px 9px; border: 2px solid var(--ink);
+  }
+  .slot-status.open { background: var(--mustard); }
+  .slot-status.filling { background: var(--camel); }
+  .slot-status.full { background: #e5e5e5; color: var(--ink-soft); }
+
+  /* ---------- CONTACT / VISIT ---------- */
+  .contact { padding: 90px 0 50px; }
+  .contact h3 {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: clamp(40px, 6vw, 72px);
+    text-transform: uppercase; line-height: 0.95; letter-spacing: -0.02em;
+  }
+  .contact h3 .italic {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic; font-weight: 400;
+    text-transform: none; color: var(--rust);
+  }
+
+  .visit-grid {
+    display: grid; grid-template-columns: 1.3fr 1fr;
+    gap: 36px; margin-top: 48px; align-items: stretch;
+    position: relative;
+  }
+
+
+  /* --- Map canvas inside a neobrutalism frame --- */
+  .map-frame {
+    position: relative;
+    border: var(--border-thick);
+    box-shadow: var(--shadow-lg);
+    background: var(--bg-soft);
+    overflow: hidden;
+    min-height: 440px;
+  }
+  .map-canvas {
+    position: absolute; inset: 0;
+    /* Push Carto's Positron palette toward our warm editorial tone */
+    filter: saturate(0.2) contrast(1.08) brightness(1.02);
+    z-index: 0;
+  }
+  .map-canvas.leaflet-container {
+    background: var(--bg-soft);
+    font-family: inherit;
+  }
+  /* Kill Leaflet's default UI chrome — keep it museum-clean */
+  .map-canvas .leaflet-control-zoom,
+  .map-canvas .leaflet-control-attribution { display: none; }
+  /* Tiny attribution, our own, corner — required by tile provider */
+  .map-attrib {
+    position: absolute; bottom: 6px; right: 8px; z-index: 3;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--ink-soft);
+    background: rgba(255,255,255,0.85);
+    padding: 2px 6px; border: 1.5px solid var(--ink);
+    letter-spacing: 0.04em;
+  }
+  .map-attrib a { color: inherit; text-decoration: underline; }
+
+  /* Giant editorial pin overlay — pure CSS */
+  .map-pin {
+    position: absolute; z-index: 2;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -100%);
+    pointer-events: none;
+    display: flex; flex-direction: column; align-items: center;
+    filter: drop-shadow(4px 4px 0 rgba(10,10,10,0.35));
+  }
+  .map-pin-flag {
+    background: var(--mustard);
+    border: var(--border-thick);
+    padding: 8px 14px 9px;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 13px; letter-spacing: 0.14em;
+    color: var(--ink);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .map-pin-stem {
+    width: 4px; height: 26px; background: var(--ink);
+  }
+  .map-pin-dot {
+    width: 20px; height: 20px;
+    background: var(--rust);
+    border: var(--border-thick);
+    border-radius: 50%;
+    margin-top: -4px;
+    animation: pin-pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pin-pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.15); }
+  }
+
+  /* Decorative corner tags on the map frame */
+  .map-tag {
+    position: absolute; z-index: 3;
+    background: var(--bg); border: var(--border);
+    padding: 5px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    box-shadow: var(--shadow-sm);
+  }
+  .map-tag.tl { top: 14px; left: 14px; transform: rotate(-2deg); }
+  .map-tag.tr { top: 14px; right: 14px; background: var(--rust); color: #fff; transform: rotate(2deg); }
+
+  /* Visit info stack — address, hours, CTAs */
+  .visit-info {
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .visit-card {
+    border: var(--border-thick); background: var(--bg);
+    padding: 22px 22px 20px; box-shadow: var(--shadow-sm);
+  }
+  .visit-card:nth-child(1) { background: var(--bg); }
+  .visit-card:nth-child(2) { background: var(--bg-soft); }
+  .visit-card h5 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 12px;
+    padding-bottom: 10px; border-bottom: 2px solid var(--ink);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .visit-card h5 .badge {
+    background: var(--rust); color: #fff;
+    padding: 2px 7px; border: 2px solid var(--ink);
+    font-size: 9px;
+  }
+  .visit-card p, .visit-card a {
+    display: block; font-size: 14px; color: var(--ink);
+    text-decoration: none; line-height: 1.6;
+  }
+  .visit-card .addr-name {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 18px; text-transform: uppercase;
+    letter-spacing: 0.04em; margin-bottom: 6px;
+    color: var(--ink);
+  }
+  .map-ctas {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .map-ctas .btn { justify-content: space-between; width: 100%; }
+  .map-ctas .btn svg {
+    flex-shrink: 0; margin-left: auto;
+  }
+
+  footer {
+    border-top: var(--border-thick); padding: 32px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .footer-inner {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 18px; text-align: center;
+  }
+  .footer-copy { order: 2; }
+  .socials {
+    display: flex; gap: 12px; justify-content: center;
+    list-style: none; order: 1;
+  }
+  .social-btn {
+    width: 44px; height: 44px;
+    border: var(--border); background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; color: var(--ink); font-weight: 800;
+    font-size: 12px;
+    transition: all .12s ease;
+  }
+  .social-btn:hover { background: var(--rust); color: #fff; transform: translate(-2px, -2px); box-shadow: 3px 3px 0 0 var(--ink); }
+
+  /* ---------- TABLET ---------- */
+  @media (max-width: 960px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+    .services-grid { grid-template-columns: repeat(2, 1fr); }
+    .gallery { grid-template-columns: repeat(4, 1fr); grid-auto-rows: 150px; }
+    .gal-1 { grid-column: span 2; grid-row: span 2; }
+    .gal-4 { grid-column: span 2; grid-row: span 2; }
+    .team-grid { grid-template-columns: 1fr; max-width: 440px; }
+    .testi-grid { grid-template-columns: 1fr; }
+    .booking-inner { grid-template-columns: 1fr; }
+    .visit-grid { grid-template-columns: 1fr; gap: 24px; }
+    .nav-links { display: none; }
+    .nav-toggle { display: inline-flex; }
+    .section-head { flex-direction: column; align-items: flex-start; }
+  }
+
+  /* ---------- MOBILE ---------- */
+  @media (max-width: 640px) {
+    :root {
+      --shadow: 4px 4px 0 0 var(--ink);
+      --shadow-lg: 6px 6px 0 0 var(--ink);
+      --shadow-sm: 3px 3px 0 0 var(--ink);
+      --border-thick: 3px solid var(--ink);
+    }
+    .container { padding: 0 18px; }
+
+    /* nav */
+    .nav-inner { padding: 12px 18px; }
+    .logo { font-size: 16px; letter-spacing: 0.14em; }
+    .logo::before { width: 10px; height: 10px; }
+    .nav-toggle { padding: 9px 14px; min-height: 44px; font-size: 10px; }
+    .mm-link { font-size: 20px; padding: 14px 4px; }
+
+    /* hero */
+    .hero { padding: 48px 0 70px; }
+    .hero-grid { gap: 40px; }
+    .eyebrow { font-size: 10px; padding: 6px 12px; margin-bottom: 18px; min-height: 32px; }
+    h1.hero-title { font-size: 44px; line-height: 0.92; margin-bottom: 20px; }
+    .hero-sub { font-size: 15px; margin-bottom: 24px; }
+    .btn { padding: 16px 30px; font-size: 12px; letter-spacing: 0.12em; min-height: 52px; gap: 14px; }
+    .hero-ctas { width: 100%; }
+    .hero-ctas .btn { flex: 1; justify-content: center; min-width: 140px; }
+    .hero-stats { gap: 8px; margin-top: 32px; }
+    .hero-stat { padding: 12px 10px 12px; }
+    .hero-stat dt { font-size: 9px; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .hero-stat dd { font-size: 22px; }
+    .hero-stat-tag { font-size: 8px; margin-top: 8px; padding-top: 6px; }
+
+    .hero-image { aspect-ratio: 3/4; }
+    .hero-badge {
+      width: 82px; height: 82px;
+      top: -14px; right: -6px;
+      font-size: 9px; padding: 8px;
+      border-width: 3px;
+    }
+    .hero-sticker {
+      bottom: -18px; left: -10px;
+      max-width: 180px; padding: 11px 13px;
+      border-width: 3px;
+    }
+    .hero-sticker .stars { font-size: 13px; }
+    .hero-sticker .quote { font-size: 11px; }
+    .hero-sticker .author { font-size: 9px; }
+
+    /* nav logo razor scales slightly down on mobile */
+    .logo-razor { width: 44px; }
+
+    .shape-1, .shape-2 { display: none; }
+
+    /* marquee */
+    .marquee { padding: 14px 0; }
+    .marquee-track { font-size: 15px; gap: 28px; }
+    .marquee-track span { gap: 28px; }
+
+    /* sections */
+    section { padding: 60px 0; }
+    .section-head { margin-bottom: 32px; gap: 16px; }
+    .section-title { font-size: 38px; }
+    .section-num { font-size: 10px; padding: 4px 9px; }
+    .section-desc { font-size: 14px; }
+
+    /* services */
+    .services-grid { grid-template-columns: 1fr; gap: 16px; }
+    .service { padding: 22px 20px 24px; }
+    .service h3 { font-size: 19px; }
+
+    /* gallery */
+    .gallery { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 150px; gap: 10px; }
+    .gal-1, .gal-4 { grid-column: span 2; grid-row: span 2; }
+    .gal-2, .gal-3, .gal-5, .gal-6 { grid-column: span 1; grid-row: span 1; }
+
+    /* team — no rotation, tidier */
+    .team-grid { gap: 18px; max-width: 100%; }
+    .barber-img { aspect-ratio: 1/1; }
+    .barber-info { padding: 16px 18px 18px; }
+    .barber-name { font-size: 18px; }
+
+    /* testimonials — kill the rotation, it causes overflow on small screens */
+    .testi-grid { gap: 16px; }
+    .testi, .testi:nth-child(1), .testi:nth-child(2), .testi:nth-child(3) { transform: none; padding: 22px 20px; }
+    .testi-quote { font-size: 16px; }
+
+    /* booking */
+    .booking-inner { gap: 40px; }
+    .booking h2 { font-size: 44px; margin-bottom: 18px; }
+    .booking p { font-size: 15px; margin-bottom: 22px; }
+    .booking-btns { width: 100%; }
+    .booking-btns .btn { flex: 1; justify-content: center; }
+    .booking-card { padding: 22px; transform: rotate(1deg); box-shadow: 6px 6px 0 0 var(--rust); }
+    .slot-time { font-size: 13px; }
+
+    /* contact / visit */
+    .contact { padding: 60px 0 30px; }
+    .contact h3 { font-size: 44px; margin-bottom: 10px; }
+    .visit-grid { margin-top: 32px; }
+    .map-frame { min-height: 320px; }
+    .map-pin-flag { font-size: 11px; padding: 7px 11px; }
+    .map-tag { font-size: 9px; padding: 4px 8px; }
+    footer { font-size: 10px; padding: 20px 0; }
+    .social-btn { width: 44px; height: 44px; font-size: 11px; }
+  }
+
+  @media (max-width: 380px) {
+    h1.hero-title { font-size: 38px; }
+    .hero-ctas .btn { min-width: 0; width: 100%; flex: 1 1 100%; }
+    .booking h2 { font-size: 38px; }
+    .logo-razor { width: 38px; }
+    .hero-badge { width: 72px; height: 72px; font-size: 8px; padding: 6px; }
+    .hero-sticker { max-width: 160px; padding: 10px 12px; }
+  }
+
+  /* Initial states for GSAP (hidden until JS runs; reveal immediately via .no-js) */
+  .js .js-reveal { opacity: 0; }
+  .js .js-char, .js .js-line { opacity: 0; }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- Inline SVG <defs> kept minimal for the refined tool silhouettes -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="steelShiny" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"  stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#e4e4e4"/>
+      <stop offset="65%" stop-color="#b8b8b8"/>
+      <stop offset="100%" stop-color="#7a7a7a"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<!-- NAV -->
+<nav aria-label="Primary">
+  <div class="nav-inner">
+    <a href="#main" class="logo" aria-label="Sculptur, home">
+      <span>SCULPTUR</span>
+    </a>
+    <div class="nav-links" role="list">
+      <a href="#services">Services</a>
+      <a href="#gallery">Gallery</a>
+      <a href="#team">Team</a>
+      <a href="#booking">Booking</a>
+      <a href="#contact">Visit</a>
+    </div>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open navigation menu">
+      <span class="burger" aria-hidden="true"><span></span><span></span><span></span></span>
+      <span class="nav-toggle-label">Menu</span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobile-menu" hidden>
+    <a href="#services" class="mm-link">Services</a>
+    <a href="#gallery" class="mm-link">Gallery</a>
+    <a href="#team" class="mm-link">Team</a>
+    <a href="#booking" class="mm-link">Booking</a>
+    <a href="#contact" class="mm-link">Visit</a>
+    <a href="https://www.fresha.com" target="_blank" rel="noopener" class="btn btn-rust mm-cta" data-fresha>Reserve on Fresha →</a>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- HERO -->
+<section class="hero" aria-labelledby="hero-title">
+  <div class="shape shape-1" aria-hidden="true"></div>
+  <div class="shape shape-2" aria-hidden="true"></div>
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <div class="eyebrow js-reveal">Est. 2019 · Accepting New Clients</div>
+        <h1 class="hero-title" id="hero-title">
+          <span class="line"><span class="js-line">Sharp cuts.</span></span>
+          <span class="line"><span class="js-line"><span class="accent">Bold</span> <span class="italic">style.</span></span></span>
+          <span class="line line-last">
+            <span class="js-line">No bs.</span>
+            <!-- Barbershop pole — static SVG, no stripe animation. -->
+            <span class="hero-razor pole-wrap" aria-hidden="true">
+              <img class="hero-pole" src="images/bshop.svg" alt="" aria-hidden="true" />
+            </span>
+          </span>
+        </h1>
+        <p class="hero-sub js-reveal">A modern barbershop where precision meets personality. We don't just cut hair — we sculpt the look you actually want to walk out with.</p>
+        <div class="hero-ctas">
+          <a href="https://www.fresha.com" target="_blank" rel="noopener" class="btn btn-rust" data-fresha>Book now →</a>
+          <a href="#services" class="btn btn-mustard">See services</a>
+        </div>
+
+        <dl class="hero-stats" aria-label="Shop highlights">
+          <div class="hero-stat">
+            <dt>Since</dt>
+            <dd>2019</dd>
+            <span class="hero-stat-tag">5+ yrs</span>
+          </div>
+          <div class="hero-stat">
+            <dt>Rated</dt>
+            <dd>4.9<span aria-hidden="true">★</span></dd>
+            <span class="hero-stat-tag">600+ reviews</span>
+          </div>
+          <div class="hero-stat">
+            <dt>Barbers</dt>
+            <dd>02</dd>
+            <span class="hero-stat-tag">Walk-ins OK</span>
+          </div>
+        </dl>
+      </div>
+
+      <div class="hero-image-wrap js-reveal">
+        <div class="hero-image">
+          <img src="images/hero.webp" alt="A barber trims a client's beard with precision shears in warm shop lighting." width="1400" height="933" loading="eager" fetchpriority="high" decoding="async" />
+        </div>
+        <div class="hero-badge" aria-hidden="true">Walk-in<br/>friendly<br/>★ ★ ★</div>
+        <figure class="hero-sticker">
+          <div class="stars" aria-hidden="true">★★★★★</div>
+          <blockquote class="quote">"Best cut I've had in years. Period."</blockquote>
+          <figcaption class="author">— M. Reyes · Google review</figcaption>
+        </figure>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track">
+    <span>Fades <span class="dot">●</span> Tapers <span class="dot">●</span> Beard Sculpting <span class="dot">●</span> Hot Towel Shaves <span class="dot">●</span> Kids Cuts <span class="dot">●</span> Style &amp; Grooming <span class="dot">●</span></span>
+    <span>Fades <span class="dot">●</span> Tapers <span class="dot">●</span> Beard Sculpting <span class="dot">●</span> Hot Towel Shaves <span class="dot">●</span> Kids Cuts <span class="dot">●</span> Style &amp; Grooming <span class="dot">●</span></span>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services" aria-labelledby="services-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="section-num">01 / Services</span>
+        <h2 class="section-title" id="services-title">What we <span class="italic">do</span>.</h2>
+      </div>
+      <p class="section-desc">Every service is a craft. Pick your weapon — from the signature sculpt to the full-works gentleman's package.</p>
+    </div>
+
+    <div class="services-grid">
+      <article class="service">
+        <div class="service-icon" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M6 4L12 10M18 4L12 10M12 14V20M8 20A2 2 0 106 18 2 2 0 008 20zM18 20A2 2 0 1016 18 2 2 0 0018 20z" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Signature Cut</h3>
+        <p>Precision scissor-work, consultation, wash &amp; style. The full Sculptur treatment.</p>
+        <div class="service-meta"><span>45 min</span><span class="price">$38</span></div>
+      </article>
+      <article class="service">
+        <div class="service-icon" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 18h16M6 14l6-10 6 10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Skin Fade</h3>
+        <p>Razor-sharp fades blended to perfection. Zero-grade to bald, your call.</p>
+        <div class="service-meta"><span>40 min</span><span class="price">$42</span></div>
+      </article>
+      <article class="service">
+        <div class="service-icon" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 3L15 9L21 10L16.5 14.5L18 21L12 17.5L6 21L7.5 14.5L3 10L9 9L12 3Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Beard Sculpt</h3>
+        <p>Trim, line-up &amp; hot towel. Structured beard work with facial oil finish.</p>
+        <div class="service-meta"><span>30 min</span><span class="price">$28</span></div>
+      </article>
+      <article class="service">
+        <div class="service-icon" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M5 8L12 3L19 8V17L12 21L5 17V8Z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 3V21" stroke="currentColor" stroke-width="2.2"/></svg>
+        </div>
+        <h3>The Works</h3>
+        <p>Cut, beard, hot towel shave, scalp massage &amp; styling. Full reset, floor to top.</p>
+        <div class="service-meta"><span>75 min</span><span class="price">$75</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery" style="padding-top:40px" aria-labelledby="gallery-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="section-num">02 / Gallery</span>
+        <h2 class="section-title" id="gallery-title">Recent <span class="italic">work.</span></h2>
+      </div>
+      <p class="section-desc">A peek inside the chair. Real cuts, real clients, zero filters.</p>
+    </div>
+    <div class="gallery">
+      <figure class="gal-item gal-1">
+        <img src="images/cut-signature.webp" alt="A clean signature cut — tapered sides, sharp styled top." width="1200" height="1798" loading="lazy" decoding="async" />
+        <figcaption>Signature</figcaption>
+      </figure>
+      <figure class="gal-item gal-2">
+        <img src="images/beard.webp" alt="Black-and-white close-up of a beard trim with scissors." width="1200" height="1807" loading="lazy" decoding="async" />
+        <figcaption>Beard</figcaption>
+      </figure>
+      <figure class="gal-item gal-3">
+        <img src="images/tools.webp" alt="Flat-lay of barber tools — clippers, shears, comb and pomades on slate." width="1200" height="800" loading="lazy" decoding="async" />
+        <figcaption>Tools</figcaption>
+      </figure>
+      <figure class="gal-item gal-4">
+        <img src="images/fade.webp" alt="Skin fade viewed from behind, being combed through." width="1200" height="1798" loading="lazy" decoding="async" />
+        <figcaption>Fade</figcaption>
+      </figure>
+      <figure class="gal-item gal-5">
+        <img src="images/style.webp" alt="Styling the finished cut with a blow-dryer." width="1200" height="1800" loading="lazy" decoding="async" />
+        <figcaption>Style</figcaption>
+      </figure>
+      <figure class="gal-item gal-6">
+        <img src="images/shop.webp" alt="The Sculptur shop floor — three leather chairs, brick walls, warm lighting." width="1200" height="797" loading="lazy" decoding="async" />
+        <figcaption>Shop</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section id="team" class="team" aria-labelledby="team-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="section-num">03 / The Chair</span>
+        <h2 class="section-title" id="team-title">Meet the <span class="italic">artists.</span></h2>
+      </div>
+      <p class="section-desc">Three specialists, a combined 20+ years of chair time, and one philosophy: no bad cuts leave this shop.</p>
+    </div>
+
+    <div class="team-grid">
+      <article class="barber">
+        <div class="barber-badge">No. 01</div>
+        <div class="barber-img">
+          <img src="images/barber-1.webp" alt="Portrait of Marco Vela, master barber and co-founder." width="1000" height="1500" loading="lazy" decoding="async" />
+        </div>
+        <div class="barber-info">
+          <div class="barber-name">Marco Vela</div>
+          <div class="barber-role">Master Barber · Co-Founder</div>
+          <div class="barber-tags">
+            <span class="tag">Fades</span>
+            <span class="tag">Classic</span>
+            <span class="tag">Beards</span>
+          </div>
+        </div>
+      </article>
+      <article class="barber">
+        <div class="barber-badge">No. 02</div>
+        <div class="barber-img">
+          <img src="images/barber-2.webp" alt="Portrait of Jordan Pike, senior stylist." width="1000" height="1500" loading="lazy" decoding="async" />
+        </div>
+        <div class="barber-info">
+          <div class="barber-name">Jordan Pike</div>
+          <div class="barber-role">Senior Stylist</div>
+          <div class="barber-tags">
+            <span class="tag">Scissor</span>
+            <span class="tag">Textures</span>
+            <span class="tag">Color</span>
+          </div>
+        </div>
+      </article>
+      <article class="barber">
+        <div class="barber-badge">No. 03</div>
+        <div class="barber-img">
+          <img src="images/barber-3.webp" alt="Portrait of Sami Okafor, barber and hair designer." width="1000" height="1500" loading="lazy" decoding="async" />
+        </div>
+        <div class="barber-info">
+          <div class="barber-name">Sami Okafor</div>
+          <div class="barber-role">Barber · Designer</div>
+          <div class="barber-tags">
+            <span class="tag">Designs</span>
+            <span class="tag">Afro</span>
+            <span class="tag">Lineups</span>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section aria-labelledby="reviews-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="section-num">04 / Reviews</span>
+        <h2 class="section-title" id="reviews-title">Word on the <span class="italic">street.</span></h2>
+      </div>
+      <p class="section-desc">4.9★ average across 600+ verified reviews. Here's a taste.</p>
+    </div>
+    <div class="testi-grid">
+      <figure class="testi">
+        <div class="testi-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <blockquote class="testi-quote">"Walked in shaggy, walked out looking like a whole new man. Marco is an actual magician with clippers."</blockquote>
+        <figcaption class="testi-author">
+          <div class="testi-avatar">
+            <img src="images/avatar-1.webp" alt="" width="300" height="450" loading="lazy" decoding="async" />
+          </div>
+          <div>
+            <div class="testi-name">David K.</div>
+            <div class="testi-handle">@dkc_films</div>
+          </div>
+        </figcaption>
+      </figure>
+      <figure class="testi">
+        <div class="testi-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <blockquote class="testi-quote">"The space alone is worth the visit. The cut is why I've been coming back every three weeks for a year."</blockquote>
+        <figcaption class="testi-author">
+          <div class="testi-avatar">
+            <img src="images/avatar-2.webp" alt="" width="300" height="450" loading="lazy" decoding="async" />
+          </div>
+          <div>
+            <div class="testi-name">Arjun S.</div>
+            <div class="testi-handle">@arjun.s</div>
+          </div>
+        </figcaption>
+      </figure>
+      <figure class="testi">
+        <div class="testi-stars" aria-label="5 out of 5 stars">★★★★★</div>
+        <blockquote class="testi-quote">"I'm fussy. I've been to 'the best barbers' in three cities. Sculptur is legitimately top-tier."</blockquote>
+        <figcaption class="testi-author">
+          <div class="testi-avatar">
+            <img src="images/avatar-3.webp" alt="" width="300" height="450" loading="lazy" decoding="async" />
+          </div>
+          <div>
+            <div class="testi-name">Theo M.</div>
+            <div class="testi-handle">@theom_designs</div>
+          </div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- BOOKING CTA -->
+<section id="booking" class="booking" aria-labelledby="booking-title">
+  <div class="container">
+    <div class="booking-inner">
+      <div>
+        <span class="section-num" style="background:var(--rust)">05 / Reserve</span>
+        <h2 id="booking-title">
+          <span class="fill">Book</span> your<br/>
+          <span class="italic">chair</span> — <br/>
+          <span class="stroke">skip the line.</span>
+        </h2>
+        <p>Reservations are handled through Fresha. Pick your barber, pick your time, pay at the chair. No deposits, no ghosting fees, no stress.</p>
+        <div class="booking-btns">
+          <a href="https://www.fresha.com" target="_blank" rel="noopener" class="btn btn-mustard" data-fresha>Book on Fresha →</a>
+          <a href="tel:+15551234567" class="btn btn-cream" aria-label="Call the shop">Call shop</a>
+        </div>
+      </div>
+
+      <aside class="booking-card" aria-label="This week's live availability">
+        <h4>This week · Live availability <span class="live" aria-hidden="true">● LIVE</span></h4>
+        <ul class="slot-list">
+          <li class="slot"><span class="slot-time">Fri · 10:30</span><span class="slot-status open">Open</span></li>
+          <li class="slot"><span class="slot-time">Fri · 14:00</span><span class="slot-status filling">1 left</span></li>
+          <li class="slot"><span class="slot-time">Sat · 09:15</span><span class="slot-status open">Open</span></li>
+          <li class="slot"><span class="slot-time">Sat · 16:45</span><span class="slot-status full">Full</span></li>
+          <li class="slot"><span class="slot-time">Sun · 11:00</span><span class="slot-status open">Open</span></li>
+        </ul>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT / VISIT + MAP -->
+<section id="contact" class="contact" aria-labelledby="contact-title">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <span class="section-num">06 / Visit</span>
+        <h3 id="contact-title">Come <span class="italic">through.</span></h3>
+      </div>
+      <p class="section-desc">Right off Vitosha Boulevard. Six minutes on foot from NDK metro. Tap the map — it opens in your Maps app.</p>
+    </div>
+
+    <div class="visit-grid">
+      <!-- Map canvas with neobrutalism frame + giant overlay pin -->
+      <div class="map-frame">
+        <div id="map" class="map-canvas"
+             role="img"
+             aria-label="Map of Sculptur Barbershop, 18 Vitosha Boulevard, Sofia, Bulgaria"></div>
+        <span class="map-tag tl">Sofia · BG</span>
+        <span class="map-tag tr">● Open now</span>
+        <div class="map-pin">
+          <div class="map-pin-flag">SCULPTUR</div>
+          <div class="map-pin-stem"></div>
+          <div class="map-pin-dot"></div>
+        </div>
+        <p class="map-attrib">
+          © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>
+          contributors · <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>
+        </p>
+      </div>
+
+      <!-- Address / hours / deep-link CTAs -->
+      <aside class="visit-info" aria-label="Address, hours and directions">
+        <div class="visit-card">
+          <h5>Where <span class="badge">NEW</span></h5>
+          <div class="addr-name">Sculptur Barbershop</div>
+          <p>18 Vitosha Boulevard<br/>1000 Sofia<br/>Bulgaria</p>
+        </div>
+
+        <div class="visit-card">
+          <h5>When</h5>
+          <p>Tue–Fri · 10:00–20:00<br/>
+          Sat · 09:00–18:00<br/>
+          Sun · 11:00–17:00<br/>
+          Mon · Closed</p>
+        </div>
+
+        <div class="map-ctas">
+          <a class="btn btn-rust"
+             href="https://maps.apple.com/?q=Sculptur+Barbershop&amp;ll=42.6932,23.3197&amp;address=18+Vitosha+Boulevard,+1000+Sofia,+Bulgaria"
+             target="_blank" rel="noopener"
+             aria-label="Open location in Apple Maps">
+            Open in Apple Maps
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="btn btn-mustard"
+             href="https://www.google.com/maps/search/?api=1&amp;query=42.6932%2C23.3197&amp;query_place_id=Sculptur+Barbershop"
+             target="_blank" rel="noopener"
+             aria-label="Open location in Google Maps">
+            Open in Google Maps
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="btn btn-cream"
+             href="https://www.google.com/maps/dir/?api=1&amp;destination=42.6932%2C23.3197&amp;destination_place_id=Sculptur+Barbershop"
+             target="_blank" rel="noopener"
+             aria-label="Get walking or driving directions">
+            Get directions
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <div class="footer-copy">© 2026 Sculptur Barbershop · All cuts reserved</div>
+    <ul class="socials" role="list">
+      <li><a href="#" class="social-btn" aria-label="Sculptur on Instagram">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="20" height="20">
+          <rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/>
+          <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/>
+          <circle cx="17.5" cy="6.5" r="1.3" fill="currentColor"/>
+        </svg>
+      </a></li>
+      <li><a href="#" class="social-btn" aria-label="Sculptur on TikTok">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="20" height="20">
+          <path d="M14 3v10.5a3 3 0 1 1-3-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 3c.3 2.5 2.2 4.2 5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a></li>
+      <li><a href="#" class="social-btn" aria-label="Sculptur on Google">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="20" height="20">
+          <path d="M12 3a9 9 0 1 0 8.6 11.5H12v-3.8h9a9 9 0 0 1-9 10.3 9 9 0 0 1 0-18 8.7 8.7 0 0 1 6.1 2.4l-2.6 2.6A5 5 0 1 0 17 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a></li>
+    </ul>
+  </div>
+</footer>
+
+<script>
+  // Flag the document so CSS can safely hide js-revealed elements without FOUC for no-JS users
+  document.documentElement.classList.add('js');
+</script>
+
+<script defer>
+  // Mobile nav toggle
+  window.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.querySelector('.nav-toggle');
+    const menu = document.getElementById('mobile-menu');
+    if (!toggle || !menu) return;
+
+    const close = () => {
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Open navigation menu');
+      menu.hidden = true;
+      document.body.style.overflow = '';
+    };
+    const open = () => {
+      toggle.setAttribute('aria-expanded', 'true');
+      toggle.setAttribute('aria-label', 'Close navigation menu');
+      menu.hidden = false;
+    };
+
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      expanded ? close() : open();
+    });
+
+    // Close when a link is tapped
+    menu.querySelectorAll('a').forEach(a => a.addEventListener('click', close));
+
+    // Close on Esc, and on resize to desktop
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    window.addEventListener('resize', () => { if (window.innerWidth > 960) close(); });
+  });
+</script>
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+<!-- Leaflet (interactive map) -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer crossorigin=""></script>
+
+<script defer>
+  // Initialise the Leaflet map once it and the DOM are ready.
+  window.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById('map');
+    if (!el || !window.L) return;
+
+    // 18 Vitosha Blvd, Sofia, BG — close enough for now.
+    const LAT = 42.6932, LNG = 23.3197;
+
+    const map = L.map(el, {
+      center: [LAT, LNG],
+      zoom: 16,
+      zoomControl: false,
+      attributionControl: false,
+      scrollWheelZoom: false,   // don't hijack page scroll
+      dragging: !L.Browser.mobile, // allow drag on desktop, disable on mobile to keep scroll predictable
+      tap: false,
+      keyboard: false,
+    });
+
+    // CartoDB Positron — light, clean, free, no API key. Attribution shown in .map-attrib.
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd',
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Re-centre on resize so the pin stays put.
+    const recentre = () => map.setView([LAT, LNG], 16, { animate: false });
+    window.addEventListener('resize', recentre);
+
+    // Make the whole map tappable on mobile — it opens the device's preferred maps app.
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const tapUrl = isIOS
+      ? 'https://maps.apple.com/?q=Sculptur+Barbershop&ll=' + LAT + ',' + LNG
+      : 'https://www.google.com/maps/search/?api=1&query=' + LAT + ',' + LNG;
+    el.addEventListener('click', (e) => {
+      // Only trigger if user tapped the map surface (not interactive controls).
+      if (e.target.closest('a, button')) return;
+      window.open(tapUrl, '_blank', 'noopener');
+    });
+    el.style.cursor = 'pointer';
+  });
+</script>
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', () => {
+    // If GSAP didn't load, show everything and bail.
+    if (!window.gsap) {
+      document.querySelectorAll('.js-reveal, .js-line, .js-char').forEach(el => {
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
+      const razor = document.querySelector('.hero-razor');
+      if (razor) razor.style.opacity = '1';
+      return;
+    }
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Force explicit starting state on the razor so it's guaranteed before first paint
+    gsap.set('.hero-razor', { x: 80, rotate: 20, scale: 0.85, opacity: 0, transformOrigin: '50% 50%' });
+
+    // ---- HERO INTRO ----
+    // NOTE: elements with .js-reveal/.js-line are held at opacity:0 via CSS to prevent FOUC.
+    // Use fromTo() so end-state opacity is explicit — .from() would read CSS's 0 as the "to" value.
+    const heroTl = gsap.timeline({ delay: 0, defaults: { ease: 'power2.out' } });
+    heroTl
+      .fromTo('.eyebrow.js-reveal', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28 })
+      .fromTo('.hero-title .js-line', { y: '110%', opacity: 0 }, { y: '0%', opacity: 1, duration: 0.42, stagger: 0.05 }, '-=0.15')
+      .fromTo('.hero-sub.js-reveal', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.28 }, '-=0.2')
+      .fromTo('.hero-ctas > *', { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.24, stagger: 0.05 }, '-=0.18')
+      .fromTo('.hero-image-wrap.js-reveal', { y: 34, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, '-=0.5')
+      .from('.hero-badge', { scale: 0, duration: 0.32, ease: 'back.out(1.8)' }, '-=0.24')
+      .from('.hero-sticker', { x: -28, opacity: 0, rotate: 4, duration: 0.3 }, '-=0.24')
+      .fromTo('.hero-razor',
+        { x: 60, rotate: 18, opacity: 0, scale: 0.88 },
+        { x: 0, rotate: -6, opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.4)' },
+        '-=0.35')
+      .fromTo('.hero-stats > *',
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.3, stagger: 0.05, ease: 'power2.out' },
+        '-=0.35');
+
+    // ---- HERO SCROLL PARALLAX ----
+    gsap.to('.hero-image img', {
+      yPercent: 8, ease: 'none',
+      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true }
+    });
+    gsap.to('.shape-1', {
+      y: -80, rotate: 60, ease: 'none',
+      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1 }
+    });
+    gsap.to('.shape-2', {
+      y: 60, ease: 'none',
+      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1 }
+    });
+
+    // ---- SECTION TITLE WIPE ----
+    gsap.utils.toArray('.section-title').forEach(t => {
+      gsap.from(t, {
+        clipPath: 'inset(0 100% 0 0)',
+        duration: 0.5, ease: 'power2.out',
+        scrollTrigger: { trigger: t, start: 'top 88%', toggleActions: 'play none none none' }
+      });
+    });
+
+    // ---- SECTION HEAD (num + desc) ----
+    gsap.utils.toArray('.section-head').forEach(head => {
+      const bits = head.querySelectorAll('.section-num, .section-desc');
+      if (!bits.length) return;
+      gsap.from(bits, {
+        y: 14, opacity: 0, duration: 0.32, stagger: 0.05,
+        scrollTrigger: { trigger: head, start: 'top 90%', toggleActions: 'play none none none' }
+      });
+    });
+
+    // ---- SERVICES ----
+    gsap.from('.services-grid > .service', {
+      y: 30, opacity: 0,
+      duration: 0.36, stagger: 0.05, ease: 'power2.out',
+      scrollTrigger: { trigger: '.services-grid', start: 'top 88%', toggleActions: 'play none none none' }
+    });
+
+    // ---- GALLERY ----
+    gsap.from('.gallery > .gal-item', {
+      y: 22, opacity: 0, scale: 0.98,
+      duration: 0.32, stagger: { each: 0.04, from: 'random' }, ease: 'power2.out',
+      scrollTrigger: { trigger: '.gallery', start: 'top 88%', toggleActions: 'play none none none' }
+    });
+
+    // ---- TEAM ----
+    gsap.from('.team-grid > .barber', {
+      y: 30, opacity: 0, duration: 0.38, stagger: 0.06, ease: 'power2.out',
+      scrollTrigger: { trigger: '.team-grid', start: 'top 88%', toggleActions: 'play none none none' }
+    });
+
+    // ---- TESTIMONIALS (preserve the rotation setup) ----
+    gsap.utils.toArray('.testi').forEach((card, i) => {
+      const rot = [-1.5, 1, -0.5][i] ?? 0;
+      gsap.fromTo(card,
+        { y: 30, opacity: 0, rotate: 0, scale: 0.98 },
+        {
+          y: 0, opacity: 1, rotate: rot, scale: 1,
+          duration: 0.38, delay: i * 0.05, ease: 'back.out(1.2)',
+          scrollTrigger: { trigger: '.testi-grid', start: 'top 88%', toggleActions: 'play none none none' }
+        }
+      );
+    });
+
+    // ---- BOOKING ----
+    gsap.from('.booking-inner > *:first-child > *', {
+      y: 16, opacity: 0, duration: 0.34, stagger: 0.05,
+      scrollTrigger: { trigger: '.booking-inner', start: 'top 88%', toggleActions: 'play none none none' }
+    });
+    gsap.fromTo('.booking-card',
+      { x: 30, opacity: 0, rotate: 0 },
+      {
+        x: 0, opacity: 1, rotate: 2, duration: 0.5, ease: 'power2.out',
+        scrollTrigger: { trigger: '.booking-inner', start: 'top 85%', toggleActions: 'play none none none' }
+      }
+    );
+    gsap.from('.slot', {
+      y: 10, opacity: 0, duration: 0.22, stagger: 0.035,
+      scrollTrigger: { trigger: '.booking-card', start: 'top 88%', toggleActions: 'play none none none' }
+    });
+
+    // ---- VISIT / MAP ----
+    gsap.from('.visit-grid > *', {
+      y: 18, opacity: 0, duration: 0.36, stagger: 0.06,
+      scrollTrigger: { trigger: '.visit-grid', start: 'top 90%', toggleActions: 'play none none none' }
+    });
+
+    // Ensure ScrollTrigger recalculates after fonts/images settle.
+    window.addEventListener('load', () => ScrollTrigger.refresh());
+  });
+</script>
+
+</body>
+</html>
