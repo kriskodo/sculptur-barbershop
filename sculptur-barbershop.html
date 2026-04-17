@@ -462,6 +462,7 @@
     border: var(--border-thick); padding: 26px 22px 28px;
     box-shadow: var(--shadow); background: var(--bg);
     position: relative;
+    display: flex; flex-direction: column;
     transition: transform .22s var(--ease-out-soft), box-shadow .22s var(--ease-out-soft);
   }
   .service:hover { transform: translate(-5px, -5px) rotate(-0.4deg); box-shadow: 12px 12px 0 0 var(--ink); }
@@ -489,6 +490,7 @@
   }
   .service p { font-size: 13px; margin-bottom: 18px; line-height: 1.45; }
   .service-meta {
+    margin-top: auto;
     display: flex; justify-content: space-between; align-items: center;
     border-top: 2px solid currentColor; padding-top: 14px;
     font-family: 'JetBrains Mono', monospace;
